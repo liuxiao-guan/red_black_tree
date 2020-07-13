@@ -22,11 +22,19 @@ int add(int a, int b) {
     return a + b;
 }
 
+#ifdef DEBUG
+
 #define log(frm, args...) { \
     printf("[%s : %d] ", __func__, __LINE__); \
     printf(frm, ##args); \
     printf("\n"); \
 }
+
+#else
+
+#define log(frm, args...)
+
+#endif
 
 int main() {
     log("DATE : %s", __DATE__);
@@ -35,8 +43,8 @@ int main() {
     log("FILE : %s", __FILE__);
     log("FUNC : %s", __func__);
     log("PRETTY_FUNCTION : %s", __PRETTY_FUNCTION__);
-    add(3, 4);
     int a = 6;
+    printf("%d\n", add(a, 4));
     log("%d", a);
     log("hello world");
     return 0;
