@@ -104,7 +104,7 @@ Node *erase(Node *root, int key) {
         } else {
             Node *temp = predecessor(root);
             root->key = temp->key;
-            root->lchild = erase(root->lchild, key);
+            root->lchild = erase(root->lchild, temp->key);
         }
     }
     update_height(root);
