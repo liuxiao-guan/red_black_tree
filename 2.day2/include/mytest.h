@@ -10,7 +10,8 @@
 
 #define EXPECT(a, comp, b) { \
     if (!((a) comp (b))) { \
-        printf("error\n"); \
+        test_func_flag = 1; \
+        expect_printf(__FILE__, __LINE__, "(" #a ") " #comp " (" #b ")"); \
     } \
 }
 
@@ -20,6 +21,12 @@
 #define EXPECT_LT(a, b) EXPECT(a, <, b)
 #define EXPECT_GE(a, b) EXPECT(a, >=, b)
 #define EXPECT_LE(a, b) EXPECT(a, <=, b)
+
+#define COLOR(str, code) "\033[1;" #code "m" str "\033[0m"
+#define GREEN(str) COLOR(str, 32)
+#define YELLOW(str) COLOR(str, 33)
+#define BLUE(str) COLOR(str, 34)
+#define RED(str) COLOR(str, 35)
 
 #define TEST(a, b) \
 void a##_##b(); \
@@ -42,11 +49,28 @@ void add_func(void (*func)(), const char *func_name) {
     return ;
 }
 
+void expect_printf(const char *file, int line_no, const char *msg) {
+    printf(YELLOW("  %s:%d: Failure\n"), file, line_no);
+    printf(YELLOW("    Expected: %s\n"), msg);
+    return ;
+}
+
+int test_func_flag;
+
 int RUN_ALL_TESTS() {
+    printf(GREEN("[==========]") " Running %d tests\n", func_cnt);
     for (int i = 0; i < func_cnt; i++) {
-        printf("run %s\n", func_arr[i].func_name);
+        printf(GREEN("[  RUN     ]") " %s\n", func_arr[i].func_name);
+        test_func_flag = 0;
+        int b = clock();
         func_arr[i].func();
-        printf("ok\n");
+        int e = clock();
+        if (test_func_flag) {
+            printf(RED("[  FAILED ]"));
+        } else {
+            printf(GREEN("[      OK  ]"));
+        }
+        printf(" %s (%d ms)\n", func_arr[i].func_name, 1000 * (e - b) / CLOCKS_PER_SEC);
     }
     return 0;
 }
