@@ -88,6 +88,86 @@ Node *insert_maintain(Node *root) {
     return root;
 }
 
+Node *predecessor(Node *root) {
+    Node *temp = root->lchild;
+    while (temp->rchild != NIL) temp = temp->rchild;
+    return temp;
+}
+
+Node *erase_maintain(Node *root) {
+    if (C(L(root)) != 2 && C(R(root)) != 2) return root;
+    if (hasRed(root)) {
+        int flag = 0;
+        root->color = 0;
+        if (C(L(root)) == 0) root = right_rotate(root), flag = 1;
+        else if (C(R(root)) == 0) root = left_rotate(root), flag = 2;
+        root->color = 1;
+        if (flag == 1) root->rchild = erase_maintain(root->rchild);
+        else root->lchild = erase_maintain(root->lchild);
+        return root;
+    }
+    if (C(L(root)) == 1) {
+        C(R(root)) = 1;
+        if (!hasRed(L(root))) {
+            C(root) += 1;
+            C(L(root)) -= 1;
+            return root;
+        }
+        if (C(L(L(root))) != 0) {
+            C(L(root)) = 0;
+            root->lchild = left_rotate(root->lchild);
+            C(L(root)) = 1;
+        }
+        C(L(root)) = C(root);
+        root = right_rotate(root);
+        C(L(root)) = C(R(root)) = 1;
+    } else {
+        C(L(root)) = 1;
+        if (!hasRed(R(root))) {
+            C(root) += 1;
+            C(R(root)) -= 1;
+            return root;
+        }
+        if (C(R(R(root))) != 0) {
+            C(R(root)) = 0;
+            root->rchild = right_rotate(root->rchild);
+            C(R(root)) = 1;
+        }
+        C(R(root)) = C(root);
+        root = left_rotate(root);
+        C(L(root)) = C(R(root)) = 1;
+    }
+    return root;
+}
+
+Node *__erase(Node *root, int key) {
+    if (root == NIL) return root;
+    if (key < root->key) {
+        root->lchild = __erase(root->lchild, key);
+    } else if (key > root->key) {
+        root->rchild = __erase(root->rchild, key);
+    } else {
+        if (root->lchild == NIL || root->rchild == NIL) {
+            Node *temp = root->lchild == NIL ? root->rchild : root->lchild;
+            temp->color += root->color;
+            free(root);
+            return temp;
+        } else {
+            Node *temp = predecessor(root);
+            root->key = temp->key;
+            root->lchild = __erase(root->lchild, temp->key);
+        }
+    }
+    return erase_maintain(root);
+}
+
+Node *erase(Node *root, int key) {
+    root = __erase(root, key);
+    root->color = 1;
+    return root;
+}
+
+
 Node *__insert(Node *root, int key) {
     if (root == NIL) return getNewNode(key);
     if (root->key == key) return root;
@@ -132,7 +212,7 @@ int main() {
     while (~scanf("%d%d", &op, &val)) {
         switch (op) {
             case 1: root = insert(root, val); break;
-            case 2: break;
+            case 2: root = erase(root, val); break;
         }
         printf("\n======= red black tree =======\n");
         output(root);
