@@ -26,6 +26,14 @@ int *getData(int n) {
     return arr;
 }
 
+int *getSortedData(int n) {
+    int *arr = (int *)malloc(sizeof(int) * n);
+    for (int i = 0; i < n; i++) {
+        arr[i] = i;
+    }
+    return arr;
+}
+
 int check(int *arr, int l, int r) {
     for (int i = l + 1; i <= r; i++) {
         if (arr[i] < arr[i - 1]) return 0;
